@@ -42,7 +42,7 @@ def monte_carlo_simulation(ticker='SMCI'):
 
                 # Display the dataframe
                 st.write("Historical Data:")
-                st.dataframe(data.head())
+                st.dataframe(data.tail())
 
                 # Calculate metrics and historical percentiles
                 prices = data['adjclose'].values

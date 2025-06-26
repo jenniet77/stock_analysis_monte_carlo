@@ -154,6 +154,13 @@ def monte_carlo_simulation(ticker='SMCI'):
                 col1.metric("Probability of reaching Historical P50", f"{prob_historical_P50:.2%}")
                 col2.metric("Probability of reaching Historical P75", f"{prob_historical_P75:.2%}")
 
+                # Calculate PREDICTIVE percentiles from simulation results
+                predictive_P10 = np.percentile(final_prices, 10)
+                predictive_P25 = np.percentile(final_prices, 25)
+                predictive_P50 = np.percentile(final_prices, 50)
+                predictive_P75 = np.percentile(final_prices, 75)
+                predictive_P90 = np.percentile(final_prices, 90)
+
                 # Plot the Monte Carlo simulation paths
                 st.subheader('6. Monte Carlo Simulation Paths')
                 fig, ax = plt.subplots(figsize=(10, 6))
@@ -173,9 +180,12 @@ def monte_carlo_simulation(ticker='SMCI'):
                 # Create custom legend
                 legend_elements = [
                     Line2D([0], [0], color='blue', lw=2, alpha=0.5, label='Simulation Paths'),
-                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${historical_P10:.2f}'),
-                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${historical_P50:.2f}'),
-                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${historical_P75:.2f}'),
+                    Line2D([0], [0], color='g', linestyle='--', label=f'P10 (Historical): ${historical_P10:.2f}'),
+                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Predictive): ${predictive_P10:.2f}'),
+                    Line2D([0], [0], color='y', linestyle='--', label=f'P50 (Historical): ${historical_P50:.2f}'),
+                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Predictive): ${predictive_P50:.2f}'),
+                    Line2D([0], [0], color='r', linestyle='--', label=f'P75 (Historical): ${historical_P75:.2f}'),
+                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Predictive): ${predictive_P75:.2f}'),
                     Line2D([0], [0], color='k', linestyle='--', lw=2, label=f'Current Price: ${S0:.2f}')
                 ]
                 ax.legend(handles=legend_elements)
@@ -185,13 +195,6 @@ def monte_carlo_simulation(ticker='SMCI'):
                 ax.set_ylabel('Price ($)')
                 ax.grid(True)
                 st.pyplot(fig)
-
-                # Calculate PREDICTIVE percentiles from simulation results
-                predictive_P10 = np.percentile(final_prices, 10)
-                predictive_P25 = np.percentile(final_prices, 25)
-                predictive_P50 = np.percentile(final_prices, 50)
-                predictive_P75 = np.percentile(final_prices, 75)
-                predictive_P90 = np.percentile(final_prices, 90)
 
                 # Plot the histogram of final prices
                 st.subheader('7. Distribution of Final Prices with Predictive Targets')

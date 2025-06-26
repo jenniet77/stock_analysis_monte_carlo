@@ -172,9 +172,12 @@ def monte_carlo_simulation(ticker='SMCI'):
                     ax.plot(simulation_df[f'Sim_{i}'], 'b-', alpha=0.1)
 
                 # Plot the percentile lines
-                ax.axhline(y=historical_P10, color='g', linestyle='-')
-                ax.axhline(y=historical_P50, color='y', linestyle='-')
-                ax.axhline(y=historical_P75, color='r', linestyle='-')
+                ax.axhline(y=historical_P10, color='g', linestyle='--')
+                ax.axhline(y=historical_P50, color='y', linestyle='--')
+                ax.axhline(y=historical_P75, color='r', linestyle='--')
+                ax.axhline(y=predictive_P10, color='g', linestyle='-')
+                ax.axhline(y=predictive_P50, color='y', linestyle='-')
+                ax.axhline(y=predictive_P75, color='r', linestyle='-')
                 ax.axhline(y=S0, color='k', linestyle='--')
 
                 # Create custom legend
@@ -200,6 +203,9 @@ def monte_carlo_simulation(ticker='SMCI'):
                 st.subheader('7. Distribution of Final Prices with Predictive Targets')
                 fig, ax = plt.subplots(figsize=(10, 6))
                 ax.hist(final_prices, bins=50, alpha=0.7)
+                ax.axvline(x=historical_P10, color='g', linestyle='--')
+                ax.axvline(x=historical_P50, color='y', linestyle='--')
+                ax.axvline(x=historical_P75, color='r', linestyle='--')
                 ax.axvline(x=predictive_P10, color='g', linestyle='-')
                 ax.axvline(x=predictive_P50, color='y', linestyle='-')
                 ax.axvline(x=predictive_P75, color='r', linestyle='-')
@@ -207,9 +213,12 @@ def monte_carlo_simulation(ticker='SMCI'):
 
                 # Create custom legend
                 legend_elements = [
-                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${predictive_P10:.2f}'),
-                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${predictive_P50:.2f}'),
-                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${predictive_P75:.2f}'),
+                    Line2D([0], [0], color='g', linestyle='--', label=f'P10 (Historical): ${historical_P10:.2f}'),
+                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Predictive): ${predictive_P10:.2f}'),
+                    Line2D([0], [0], color='y', linestyle='--', label=f'P50 (Historical): ${historical_P50:.2f}'),
+                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Predictive): ${predictive_P50:.2f}'),
+                    Line2D([0], [0], color='r', linestyle='--', label=f'P75 (Historical): ${historical_P75:.2f}'),
+                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Predictive): ${predictive_P75:.2f}'),
                     Line2D([0], [0], color='k', linestyle='--', lw=2, label=f'Current Price: ${S0:.2f}')
                 ]
                 ax.legend(handles=legend_elements)

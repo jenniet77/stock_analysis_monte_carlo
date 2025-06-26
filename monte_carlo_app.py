@@ -52,37 +52,44 @@ def monte_carlo_simulation(ticker='SMCI'):
                 mu = np.mean(log_returns)
                 sigma = np.std(log_returns)
 
+                # Get current price (latest adjusted close)
+                current_price = prices[-1]
+
+                # Calculate what percentile the current price represents
+                current_percentile = (np.sum(prices <= current_price) / len(prices)) * 100
+
                 # Create metrics display
-                col1, col2 = st.columns(2)
+                col1, col2, col3 = st.columns(3)
                 col1.metric("Mean of Log Returns (μ)", f"{mu:.6f}")
                 col2.metric("Standard Deviation (σ)", f"{sigma:.6f}")
+                col3.metric("Current Price", f"${current_price:.2f}", f"{current_percentile:.1f}th percentile")
 
-                # Calculate the percentiles for entry and exit points
-                P10 = np.percentile(prices, 10)
-                P50 = np.percentile(prices, 50)
-                P75 = np.percentile(prices, 75)
+                # Calculate the HISTORICAL percentiles for entry and exit points
+                historical_P10 = np.percentile(prices, 10)
+                historical_P50 = np.percentile(prices, 50)
+                historical_P75 = np.percentile(prices, 75)
 
                 # Display target prices
-                st.subheader('2. Target Prices')
+                st.subheader('2. Historical Target Prices (Strategy Reference)')
                 col1, col2, col3 = st.columns(3)
-                col1.metric("Entry Point (P10)", f"${P10:.2f}")
-                col2.metric("Partial Exit (P50)", f"${P50:.2f}")
-                col3.metric("Final Exit (P75)", f"${P75:.2f}")
+                col1.metric("Entry Point (P10)", f"${historical_P10:.2f}")
+                col2.metric("Partial Exit (P50)", f"${historical_P50:.2f}")
+                col3.metric("Final Exit (P75)", f"${historical_P75:.2f}")
 
                 # Plot the historical prices with percentile lines
                 st.subheader('3. Historical Prices with Target Levels')
                 fig, ax = plt.subplots(figsize=(10, 6))
                 ax.plot(data.index, data['adjclose'], label=f'{ticker} Adj Close')
-                ax.axhline(y=P10, color='g', linestyle='-')
-                ax.axhline(y=P50, color='y', linestyle='-')
-                ax.axhline(y=P75, color='r', linestyle='-')
+                ax.axhline(y=historical_P10, color='g', linestyle='-')
+                ax.axhline(y=historical_P50, color='y', linestyle='-')
+                ax.axhline(y=historical_P75, color='r', linestyle='-')
 
                 # Create custom legend
                 legend_elements = [
                     Line2D([0], [0], color='blue', lw=2, label=f'{ticker} Adj Close'),
-                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${P10:.2f}'),
-                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${P50:.2f}'),
-                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${P75:.2f}')
+                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${historical_P10:.2f}'),
+                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${historical_P50:.2f}'),
+                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${historical_P75:.2f}')
                 ]
                 ax.legend(handles=legend_elements)
 
@@ -138,14 +145,14 @@ def monte_carlo_simulation(ticker='SMCI'):
                 final_prices = simulation_df.iloc[-1].values
 
                 # Calculate the probability of reaching the targets
-                prob_P50 = np.mean(final_prices >= P50)
-                prob_P75 = np.mean(final_prices >= P75)
+                prob_historical_P50 = np.mean(final_prices >= historical_P50)
+                prob_historical_P75 = np.mean(final_prices >= historical_P75)
 
                 # Display probabilities
                 st.subheader('5. Simulation Results')
                 col1, col2 = st.columns(2)
-                col1.metric("Probability of reaching P50", f"{prob_P50:.2%}")
-                col2.metric("Probability of reaching P75", f"{prob_P75:.2%}")
+                col1.metric("Probability of reaching Historical P50", f"{prob_historical_P50:.2%}")
+                col2.metric("Probability of reaching Historical P75", f"{prob_historical_P75:.2%}")
 
                 # Plot the Monte Carlo simulation paths
                 st.subheader('6. Monte Carlo Simulation Paths')
@@ -158,17 +165,17 @@ def monte_carlo_simulation(ticker='SMCI'):
                     ax.plot(simulation_df[f'Sim_{i}'], 'b-', alpha=0.1)
 
                 # Plot the percentile lines
-                ax.axhline(y=P10, color='g', linestyle='-')
-                ax.axhline(y=P50, color='y', linestyle='-')
-                ax.axhline(y=P75, color='r', linestyle='-')
+                ax.axhline(y=historical_P10, color='g', linestyle='-')
+                ax.axhline(y=historical_P50, color='y', linestyle='-')
+                ax.axhline(y=historical_P75, color='r', linestyle='-')
                 ax.axhline(y=S0, color='k', linestyle='--')
 
                 # Create custom legend
                 legend_elements = [
                     Line2D([0], [0], color='blue', lw=2, alpha=0.5, label='Simulation Paths'),
-                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${P10:.2f}'),
-                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${P50:.2f}'),
-                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${P75:.2f}'),
+                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${historical_P10:.2f}'),
+                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${historical_P50:.2f}'),
+                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${historical_P75:.2f}'),
                     Line2D([0], [0], color='k', linestyle='--', lw=2, label=f'Current Price: ${S0:.2f}')
                 ]
                 ax.legend(handles=legend_elements)
@@ -179,20 +186,27 @@ def monte_carlo_simulation(ticker='SMCI'):
                 ax.grid(True)
                 st.pyplot(fig)
 
+                # Calculate PREDICTIVE percentiles from simulation results
+                predictive_P10 = np.percentile(final_prices, 10)
+                predictive_P25 = np.percentile(final_prices, 25)
+                predictive_P50 = np.percentile(final_prices, 50)
+                predictive_P75 = np.percentile(final_prices, 75)
+                predictive_P90 = np.percentile(final_prices, 90)
+
                 # Plot the histogram of final prices
-                st.subheader('7. Distribution of Final Prices')
+                st.subheader('7. Distribution of Final Prices with Predictive Targets')
                 fig, ax = plt.subplots(figsize=(10, 6))
                 ax.hist(final_prices, bins=50, alpha=0.7)
-                ax.axvline(x=P10, color='g', linestyle='-')
-                ax.axvline(x=P50, color='y', linestyle='-')
-                ax.axvline(x=P75, color='r', linestyle='-')
+                ax.axvline(x=predictive_P10, color='g', linestyle='-')
+                ax.axvline(x=predictive_P50, color='y', linestyle='-')
+                ax.axvline(x=predictive_P75, color='r', linestyle='-')
                 ax.axvline(x=S0, color='k', linestyle='--')
 
                 # Create custom legend
                 legend_elements = [
-                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${P10:.2f}'),
-                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${P50:.2f}'),
-                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${P75:.2f}'),
+                    Line2D([0], [0], color='g', lw=2, label=f'P10 (Entry): ${predictive_P10:.2f}'),
+                    Line2D([0], [0], color='y', lw=2, label=f'P50 (Partial Exit): ${predictive_P50:.2f}'),
+                    Line2D([0], [0], color='r', lw=2, label=f'P75 (Final Exit): ${predictive_P75:.2f}'),
                     Line2D([0], [0], color='k', linestyle='--', lw=2, label=f'Current Price: ${S0:.2f}')
                 ]
                 ax.legend(handles=legend_elements)
@@ -203,41 +217,99 @@ def monte_carlo_simulation(ticker='SMCI'):
                 ax.grid(True)
                 st.pyplot(fig)
 
-                # Interpretation
-                st.subheader('8. Interpretation')
+                # Display predictive percentiles in a nice format
+                st.subheader('8. Predictive Price Targets from Monte Carlo Simulation')
+                st.write("These percentiles represent the price levels that the corresponding percentage of simulations reached or exceeded:")
+                
+                col1, col2, col3, col4, col5 = st.columns(5)
+                col1.metric("P10 (90% reach)", f"${predictive_P10:.2f}")
+                col2.metric("P25 (75% reach)", f"${predictive_P25:.2f}")
+                col3.metric("P50 (50% reach)", f"${predictive_P50:.2f}")
+                col4.metric("P75 (25% reach)", f"${predictive_P75:.2f}")
+                col5.metric("P90 (10% reach)", f"${predictive_P90:.2f}")
 
-                interpretation = ""
-                if prob_P50 > 0.7:
-                    interpretation += f"- **High confidence (P50)**: There is a high probability ({prob_P50:.2%}) of reaching the P50 target, suggesting strong confidence in partial profit-taking.\n\n"
-                elif prob_P50 > 0.5:
-                    interpretation += f"- **Moderate confidence (P50)**: There is a moderate probability ({prob_P50:.2%}) of reaching the P50 target for partial profit-taking.\n\n"
-                else:
-                    interpretation += f"- **Low confidence (P50)**: There is a relatively low probability ({prob_P50:.2%}) of reaching the P50 target, suggesting caution with this stock.\n\n"
+                # Calculate probabilities for predictive targets
+                prob_predictive_P50 = 0.50  # By definition, 50% of simulations reach P50
+                prob_predictive_P75 = 0.25  # By definition, 25% of simulations reach P75
 
-                if prob_P75 > 0.5:
-                    interpretation += f"- **High confidence (P75)**: There is a good probability ({prob_P75:.2%}) of reaching the P75 target, suggesting strong potential for significant profit.\n\n"
-                elif prob_P75 > 0.3:
-                    interpretation += f"- **Moderate confidence (P75)**: There is a moderate probability ({prob_P75:.2%}) of reaching the P75 target for maximum profit-taking.\n\n"
-                else:
-                    interpretation += f"- **Low confidence (P75)**: There is a low probability ({prob_P75:.2%}) of reaching the P75 target, suggesting that full profit target might be challenging.\n\n"
-
+                 # Interpretation based on predictive model
+                st.subheader('9. Interpretation of Predictive Results')
+                
+                interpretation = f"""
+                **Predictive Analysis Summary:**
+                
+                - **Expected Median Price (P50)**: ${predictive_P50:.2f} - This is the price level that 50% of simulations reached or exceeded
+                - **Conservative Target (P75)**: ${predictive_P75:.2f} - This is the price level that 25% of simulations reached or exceeded
+                - **Optimistic Target (P90)**: ${predictive_P90:.2f} - This is the price level that only 10% of simulations reached or exceeded
+                
+                **Price Movement Expectations:**
+                - Starting Price: ${S0:.2f}
+                - Expected change to P50: {((predictive_P50/S0 - 1) * 100):+.1f}%
+                - Expected change to P75: {((predictive_P75/S0 - 1) * 100):+.1f}%
+                
+                **Risk Assessment:**
+                - Downside Risk (P10): ${predictive_P10:.2f} ({((predictive_P10/S0 - 1) * 100):+.1f}%)
+                - Upside Potential (P90): ${predictive_P90:.2f} ({((predictive_P90/S0 - 1) * 100):+.1f}%)
+                """
+                
                 st.markdown(interpretation)
-
-                # Recommendation
-                st.subheader('9. Investment Recommendation')
-
-                if prob_P50 > 0.6 and prob_P75 > 0.4:
-                    recommendation = "**Strong Buy Recommendation**\n\nThe simulation shows high probabilities of reaching both partial and full profit targets within the 90-day time horizon. This stock presents a favorable risk-reward ratio and should be prioritized for entry when price reaches the P10 level."
-                elif prob_P50 > 0.5:
-                    recommendation = "**Moderate Buy Recommendation**\n\nThe simulation shows a reasonable probability of reaching at least the partial profit target. Consider allocating a moderate position when price reaches the P10 level, with a plan to take partial profits at P50."
+                
+                # Investment recommendation based on predictive model
+                st.subheader('10. Investment Recommendation')
+                
+                expected_return_p50 = (predictive_P50/S0 - 1) * 100
+                expected_return_p75 = (predictive_P75/S0 - 1) * 100
+                downside_risk = (predictive_P10/S0 - 1) * 100
+                
+                if expected_return_p50 > 10 and downside_risk > -20:
+                    recommendation = f"""
+                    **Strong Buy Recommendation**
+                    
+                    The Monte Carlo simulation suggests favorable risk-reward characteristics:
+                    - Expected median return: {expected_return_p50:+.1f}%
+                    - Conservative target return: {expected_return_p75:+.1f}%
+                    - Limited downside risk: {downside_risk:+.1f}%
+                    
+                    Consider this stock for target-based investing with:
+                    - Entry strategy: Current price levels
+                    - Partial profit taking: Around ${predictive_P50:.2f} (50% probability)
+                    - Full exit target: Around ${predictive_P75:.2f} (25% probability)
+                    """
+                elif expected_return_p50 > 0:
+                    recommendation = f"""
+                    **Moderate Buy Recommendation**
+                    
+                    The simulation shows modest positive expectations:
+                    - Expected median return: {expected_return_p50:+.1f}%
+                    - Conservative target return: {expected_return_p75:+.1f}%
+                    - Downside risk: {downside_risk:+.1f}%
+                    
+                    Consider a moderate position with careful risk management.
+                    """
                 else:
-                    recommendation = "**Cautious Approach Recommended**\n\nThe simulation shows relatively low probabilities of reaching profit targets. Consider alternative investments with better probability profiles or reduce position size if entering at P10 level."
-
+                    recommendation = f"""
+                    **Cautious Approach Recommended**
+                    
+                    The simulation indicates challenging conditions:
+                    - Expected median return: {expected_return_p50:+.1f}%
+                    - Potential downside: {downside_risk:+.1f}%
+                    
+                    Consider waiting for better entry opportunities or exploring alternative investments.
+                    """
+                
                 st.markdown(recommendation)
-
+                
+                # Additional statistics
+                st.subheader('11. Additional Statistics')
+                col1, col2, col3, col4 = st.columns(4)
+                col1.metric("Mean Final Price", f"${np.mean(final_prices):.2f}")
+                col2.metric("Std Dev Final Price", f"${np.std(final_prices):.2f}")
+                col3.metric("Min Simulated Price", f"${np.min(final_prices):.2f}")
+                col4.metric("Max Simulated Price", f"${np.max(final_prices):.2f}")
+        
         except Exception as e:
             st.error(f"An error occurred: {e}")
-
+            st.write("Please check the stock ticker and try again.")
 
 if __name__ == "__main__":
     monte_carlo_simulation()

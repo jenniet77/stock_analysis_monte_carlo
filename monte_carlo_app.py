@@ -105,7 +105,7 @@ def monte_carlo_simulation(ticker='SMCI'):
                 # Define simulation parameters
                 days = 90  # time horizon
                 dt = 1 / 252  # daily time step (1/252 trading days in a year)
-                num_simulations = 1000  # number of simulations (reduced for streamlit)
+                num_simulations = 10000  # number of simulations (reduced for streamlit)
 
                 # Get the most recent price as the starting point
                 S0 = prices[-1]

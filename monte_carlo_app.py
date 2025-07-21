@@ -125,7 +125,7 @@ def monte_carlo_simulation(ticker='SMCI'):
                     status_text.text(f"Simulation progress: {int(progress * 100)}%")
 
                     # Generate array of random standard normal values
-                    Z = np.random.normal(0,1,size=(days,num_simulations))
+                    Z = np.random.normal(0,1,size=(days))
 
                     # Initialize price array
                     price_path = np.zeros(days)
